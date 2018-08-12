@@ -1,0 +1,1 @@
+cmd_/root/raspberry/driver_module/test1/hello.ko := arm-linux-gnueabi-ld -EL -r  -T /root/raspberry/linux-3.10/scripts/module-common.lds --build-id  -o /root/raspberry/driver_module/test1/hello.ko /root/raspberry/driver_module/test1/hello.o /root/raspberry/driver_module/test1/hello.mod.o
