@@ -8,6 +8,7 @@
 #define GLOBALMEM_SIZE (1U << 10)
 #define MEM_CLEAR 0x01
 #define GLOBALMEM_MAJOR 200
+#define DEVICE_NUM 10
 
 static int globalmem_major = GLOBALMEM_MAJOR;
 module_param(globalmem_major, int, S_IRUGO);
@@ -22,8 +23,9 @@ struct globalmem_dev *globalmem_devp;
 
 static int globalmem_open(struct inode *inode, struct file *filp)
 {
+	struct globalmem_dev *dev = container_of(inode->i_cdev, struct globalmem_dev, cdev);
 	/*	get file private data */
-	filp->private_data = globalmem_devp;
+	filp->private_data = dev;
 	return 0;
 }
 
@@ -154,31 +156,32 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index){
 
 static int __init globalmem_init(void)
 {
-	int ret;
+	int ret, i;
 	dev_t devno = MKDEV(globalmem_major, 0);
 
 	if(globalmem_major)
-		ret = register_chrdev_region(devno, 1, "globalmem");
+		ret = register_chrdev_region(devno, DEVICE_NUM, "globalmem");
 	/* If don't know the region of number, dynamically allocate it*/
 	else{
-		ret = alloc_chrdev_region(&devno, 0, 1, "globalmem");
+		ret = alloc_chrdev_region(&devno, 0, DEVICE_NUM, "globalmem");
 		globalmem_major = MAJOR(devno);
 	}
 
 	if (ret < 0)
 		return ret;
 	
-	globalmem_devp = kzalloc(sizeof(struct globalmem_dev), GFP_KERNEL);
+	globalmem_devp = kzalloc(sizeof(struct globalmem_dev) * DEVICE_NUM, GFP_KERNEL);
 	if (!globalmem_devp){
 		ret = -ENOMEM;
 		goto fail_malloc;
 	}
+	for(i = 0; i< DEVICE_NUM; i++)
+		globalmem_setup_cdev(globalmem_devp + i, i);
 
-	globalmem_setup_cdev(globalmem_devp, 0);
 	return 0;
 
 	fail_malloc:
-	unregister_chrdev_region(devno, 1);
+	unregister_chrdev_region(devno, DEVICE_NUM);
 	return ret;
 
 	return 0;
@@ -190,8 +193,12 @@ static int __init globalmem_init(void)
 
 static void __exit hello_exit(void)
 {
-	
+	int i;
 	printk(KERN_ALERT "driver unloaded\n");
+	for (i = 0; i< DEVICE_NUM; i++)
+		cdev_del(&(globalmem_devp + i)->cdev);
+	kfree(globalmem_devp);
+	unregister_chrdev_region(MKDEV(globalmem_major, 0), DEVICE_NUM);
 }
 
 MODULE_LICENSE("Dual BSD/GPL");
