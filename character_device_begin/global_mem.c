@@ -146,7 +146,7 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index){
 	int err, devno = MKDEV(globalmem_major, index);
 	cdev_init(&dev->cdev, &globalmem_fops);
 	dev->cdev.owner = THIS_MODULE;
-	err = cdev_add(&dev->cdev, devno, 1);
+	err = cdev_add(&dev->cdev, devno, 1); // register cdev to kobj_map()
 
 	if (err)
 		printk(KERN_NOTICE "error %d adding globalmem %d", err, index);
@@ -157,6 +157,7 @@ static int __init globalmem_init(void)
 	int ret;
 	dev_t devno = MKDEV(globalmem_major, 0);
 
+	/* Register device number */
 	if(globalmem_major)
 		ret = register_chrdev_region(devno, 1, "globalmem");
 	/* If don't know the region of number, dynamically allocate it*/
@@ -167,7 +168,7 @@ static int __init globalmem_init(void)
 
 	if (ret < 0)
 		return ret;
-	
+	/* Allocate memory for file private data */
 	globalmem_devp = kzalloc(sizeof(struct globalmem_dev), GFP_KERNEL);
 	if (!globalmem_devp){
 		ret = -ENOMEM;
@@ -190,7 +191,9 @@ static int __init globalmem_init(void)
 
 static void __exit hello_exit(void)
 {
-	
+	cdev_del(&global_mem_devp->cdev);	// unregister cdev from kobj_map()
+	kfree(global_mem_devp);				// free allocated memory of file private data 
+	unregister_chrdev_region(MKDEV(globalmem_major,0), 1); // unregister device number
 	printk(KERN_ALERT "driver unloaded\n");
 }
 
