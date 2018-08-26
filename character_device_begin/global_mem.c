@@ -191,8 +191,8 @@ static int __init globalmem_init(void)
 
 static void __exit hello_exit(void)
 {
-	cdev_del(&global_mem_devp->cdev);	// unregister cdev from kobj_map()
-	kfree(global_mem_devp);				// free allocated memory of file private data 
+	cdev_del(&globalmem_devp->cdev);	// unregister cdev from kobj_map()
+	kfree(globalmem_devp);				// free allocated memory of file private data 
 	unregister_chrdev_region(MKDEV(globalmem_major,0), 1); // unregister device number
 	printk(KERN_ALERT "driver unloaded\n");
 }
