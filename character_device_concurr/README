@@ -1,0 +1,16 @@
+# insert module
+insmod globalmem.ko
+# check if module being inserted
+cat /proc/devices
+# create device node
+mknod /dev/global c 200 0
+
+# if multi-device
+mknod /dev/global2 c 200 2
+mknod /dev/global3 c 200 3
+
+# read
+cat /dev/global
+# write 
+echo "I love device driver" > /dev/global
+
