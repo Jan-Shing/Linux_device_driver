@@ -1,0 +1,2 @@
+Use this command to build:
+	make CC=arm-linux-gnueabihf-gcc CFLAGS=-static ARCH=arm poll
