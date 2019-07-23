@@ -1,0 +1,4 @@
+# insert module
+insmod timer_interval.ko
+# check if module being inserted
+message from mod_timer will appeare every 10s
