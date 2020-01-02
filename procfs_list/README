@@ -1,0 +1,4 @@
+# insert module
+insmod /driver/proc_tasklist.ko
+# check all the tasks
+cat /proc/driver/task_list
