@@ -1,0 +1,4 @@
+# insert module
+insmod timer_wake.ko
+# check if module being inserted
+you can adjust the valuse of SLEEP_TIMEOUT and WAKEUP_TIMEOUT to know the behavior of wait_evnet_timeout() and wake_up()
